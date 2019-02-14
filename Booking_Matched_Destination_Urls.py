@@ -48,7 +48,10 @@ cnt=0
 for zone in new_map_zone_list:
     #To handle conditions like "LoulA%A9, Algarve, Portugal"
     zone = strcheckrubbish(zone)
-    print(zone)
+    #Writing a log file
+    f = open("Log_file.txt", "a+")
+    f.write("Input Location name: {}".format(zone))
+    f.write("\n")
     cnt = cnt+1
     #Hitting booking.com
     driver.get('https://www.booking.com/')
@@ -77,25 +80,34 @@ for zone in new_map_zone_list:
         suggest_dest.append(dest_map.get_attribute('data-label'))
 
     matched_dest_index=0
+    #Writing a log file
+    f = open("Log_file.txt", "a+")
     #Matching condtition for suggested destination with input desition if matched
     for matched_dest in suggest_dest:
         up_matched_dest=strcheckrubbish(matched_dest).upper()
         up_zone=strcheckrubbish(zone).upper()
         if (up_matched_dest==up_zone) or (up_zone in up_matched_dest):
-            print(up_matched_dest)
-            print(up_zone)
+            #Writing a log file
+            f.write("Input Location name: {} and Site Location name: {}".format(up_zone,up_matched_dest))
+            f.write("\n")
+            f.write("Matched index no: {}".format(matched_dest_index))
+            f.write("\n")
             #Find out matched destination index number.
-            print("Matched index no: {}".format(matched_dest_index))
             #Find out matched destination name <li> section
             select_li = driver.find_element_by_xpath('//li[@data-i="{}"]'.format(matched_dest_index))
-            #print(select_li)
             time.sleep(5)
             #Click matched destination name <li> section
-            select_li.click()
+            #Handle Exception if Location not found.
+            try:
+                select_li.click()
+            except:
+                continue
             time.sleep(5)
             break# Exit loop if destination matched.
         else:
-            print("Not matched index no: {0}".format(matched_dest_index))
+            #Writing a log file
+            f.write("Not matched index no: {0}".format(matched_dest_index))
+            f.write("\n")
         matched_dest_index = matched_dest_index + 1
 
     ## search_button = driver.find_element_by_xpath('//button[@class="sb-searchbox__button  "]')
@@ -104,9 +116,8 @@ for zone in new_map_zone_list:
     time.sleep(3)
     #Getting matched destination url after selecting the destination name on Booking.com and storing it into the list.
     new_map_zone_urls_list.append(driver.current_url)
-    # if cnt==1:
-    #     driver.quit()
-    #     break
+    #Writing a log file
+    f.write("\n\n")
 
 #Writing matched destinationa urls into an Excel file.
 for i in range(2, (max_row + 1)):
